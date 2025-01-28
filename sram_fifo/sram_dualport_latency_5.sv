@@ -44,9 +44,10 @@ module sram_dualport_latency_5 #(
     end
 
     always_ff @(posedge clk_i) begin
-        shift_reg[0] <= sram_out;
+        if (shift_vld[0])
+            shift_reg[0] <= sram_out;
 
-        for (int i = 1; i < LATENCY; i++) begin
+        for (int i = 1; i < LATENCY - 1; i++) begin
             if (shift_vld[i]) begin
                 shift_reg[i] <= shift_reg[i-1];
             end
