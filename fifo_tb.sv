@@ -27,6 +27,8 @@ module fifo_tb();
     logic [W_FIFO - 1:0] fifo_in  [$];
     logic [W_FIFO - 1:0] fifo_out [$];
 
+    int fifo_size = 0;
+
     fifo_dualport # (
         .WIDTH ( W_FIFO ),
         .DEPTH ( D_FIFO )
@@ -119,11 +121,32 @@ module fifo_tb();
         forever begin
             @(posedge clk);
 
-            if (up_handshake)
-                fifo_in.push_back(up_data);
+            if (empty) begin
+                assert (fifo_size == 0) else begin
+                    $error("Fifo has empty flag, but it has %d \
+                            elements inside", fifo_size);
+                    $finish;
+                end
+            end
 
-            if (down_handshake)
+            if (full) begin
+                assert (fifo_size == D_FIFO) else begin
+                    $error("Fifo has full flag, but it has %d \
+                            elements inside", fifo_size);
+                    $finish;
+                end
+            end
+
+            if (up_handshake) begin
+                fifo_in.push_back(up_data);
+                fifo_size++;
+            end
+
+            if (down_handshake) begin
                 fifo_out.push_back(down_data);
+                fifo_size--;
+            end
+
         end
     endtask
 
